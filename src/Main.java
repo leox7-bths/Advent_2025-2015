@@ -16,59 +16,38 @@ public class Main {
 
     public static int getPartOneNumber(ArrayList<String> lines) {
         int total = 0;
-
-        for (String line : lines) {
-            String[] parts = line.split("x");
-
-            int a = Integer.parseInt(parts[0]);
-            int b = Integer.parseInt(parts[1]);
-            int c = Integer.parseInt(parts[2]);
-
-            total += getArea(a, b, c);
+        int past = 0;
+        int current = 0;
+        for (int i = 0; i < lines.size(); i++) {
+            if (i == 0) {
+                current = Integer.parseInt(lines.get(i));
+                past = Integer.parseInt(lines.get(i));
+            } else {
+                current = Integer.parseInt(lines.get(i));
+                if (current > past) {
+                    total++;
+                }
+                past = Integer.parseInt(lines.get(i));
+            }
         }
         return total;
     }
 
     public static int getPartTwoNumber(ArrayList<String> lines) {
         int total = 0;
-
-        for (String line : lines) {
-            String[] parts = line.split("x");
-
-            int a = Integer.parseInt(parts[0]);
-            int b = Integer.parseInt(parts[1]);
-            int c = Integer.parseInt(parts[2]);
-            total += getRibbon(a, b, c);
+        int first = 0;
+        int second = 0;
+        int third = 0;
+        ArrayList<String> biggerList = new ArrayList<>();
+        for (int i = 0; i < lines.size()-2; i++) {
+            first = Integer.parseInt(lines.get(i));
+            second = Integer.parseInt(lines.get(i+1));
+            third = Integer.parseInt(lines.get(i+2));
+            total = first + second + third;
+            biggerList.add("" + total);
         }
-
-        return total;
+        return getPartOneNumber(biggerList);
     }
-
-    public static int getArea(int len, int wid, int hei) {
-        int area1 = len * wid;
-        int area2 = wid * hei;
-        int area3 = len * hei;
-
-        int extra = Math.min(area1, Math.min(area2, area3));
-
-        return 2 * area1 + 2 * area2 + 2 * area3 + extra;
-    }
-
-    public static int getRibbon(int len, int wid, int hei) {
-        int[] sides = {len, wid, hei};
-        Arrays.sort(sides);
-
-        int area1 = 2 * sides[0] + 2 * sides[1];
-        int area2 = len * wid * hei;
-
-        return area1 + area2;
-    }
-
-
-    public static int getPartTwoNumber() {
-        return 0;
-    }
-
 
     public static ArrayList<String> getFileData(String fileName) {
         ArrayList<String> fileData = new ArrayList<String>();
