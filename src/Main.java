@@ -1,76 +1,58 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.math.BigInteger;
 
 
 public class Main {
     public static void main(String[] args) {
         ArrayList<String> lines = getFileData("src/data");
-
-        System.out.println("Part one answer: " + getPartOneNumber(lines));
-        System.out.println("Part two answer: " + getPartTwoNumber(lines));
+        System.out.println("Part one answer: " + getPartOneNumber("bgvyzdsv"));
+        System.out.println("Part two answer: " + getPartTwoNumber("bgvyzdsv"));
     }
 
 
-    public static int getPartOneNumber(ArrayList<String> lines) {
-        Set<String> visited = new HashSet<>();
-
-        int x = 0;
-        int y = 0;
-        visited.add(x + "," + y);
-
-        for (String line : lines) {
-            for (char move : line.toCharArray()) {
-                switch (move) {
-                    case '^': y++; break;
-                    case 'v': y--; break;
-                    case '<': x--; break;
-                    case '>': x++; break;
-                }
-                visited.add(x + "," + y);
-            }
+    public static int getPartOneNumber(String key) {
+        int answer = 0;
+        boolean yes = false;
+        while (!yes) {
+            String input = getMd5(key + answer);
+//            System.out.println(answer);
+            yes = input.startsWith("00000");
+            answer++;
         }
-
-        return visited.size();
+        return answer - 1;
     }
 
-    public static int getPartTwoNumber(ArrayList<String> lines) {
-        Set<String> visited = new HashSet<>();
-//        Set<String> visited2 = new HashSet<>();
-
-        int x = 0;
-        int y = 0;
-        int x2 = 0;
-        int y2 = 0;
-        visited.add(x + "," + y);
-
-
-        for (String line : lines) {
-            for (int i = 0; i < line.length(); i++) {
-                if (i % 2 == 0) {
-                    char move = line.charAt(i);
-                    switch (move) {
-                        case '^': y++; break;
-                        case 'v': y--; break;
-                        case '<': x--; break;
-                        case '>': x++; break;
-                    }
-                    visited.add(x + "," + y);
-                } else {
-                    char move = line.charAt(i);
-                    switch (move) {
-                        case '^': y2++; break;
-                        case 'v': y2--; break;
-                        case '<': x2--; break;
-                        case '>': x2++; break;
-                    }
-                    visited.add(x2 + "," + y2);
-                }
-            }
+    public static int getPartTwoNumber(String key) {
+        int answer = 0;
+        boolean yes = false;
+        while (!yes) {
+            String input = getMd5(key + answer);
+//            System.out.println(answer);
+            yes = input.startsWith("000000");
+            answer++;
         }
+        return answer - 1;
+    }
 
-
-        return visited.size();
+    public static String getMd5(String input)
+    {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(input.getBytes());
+            BigInteger no = new BigInteger(1, messageDigest);
+            String hashtext = no.toString(16);
+            while (hashtext.length() < 32) {
+                hashtext = "0" + hashtext;
+            }
+            return hashtext;
+        }
+        catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static ArrayList<String> getFileData(String fileName) {
