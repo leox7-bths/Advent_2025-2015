@@ -6,54 +6,95 @@ import java.util.*;
 import java.math.BigInteger;
 
 
+
+
 public class Main {
     public static void main(String[] args) {
         ArrayList<String> lines = getFileData("src/data");
-        System.out.println("Part one answer: " + getPartOneNumber("bgvyzdsv"));
-        System.out.println("Part two answer: " + getPartTwoNumber("bgvyzdsv"));
+        System.out.println("Part one answer: " + getPartOneNumber(lines));
+        System.out.println("Part two answer: " + getPartTwoNumber(lines));
     }
 
 
-    public static int getPartOneNumber(String key) {
-        int answer = 0;
-        boolean yes = false;
-        while (!yes) {
-            String input = getMd5(key + answer);
-//            System.out.println(answer);
-            yes = input.startsWith("00000");
-            answer++;
-        }
-        return answer - 1;
-    }
 
-    public static int getPartTwoNumber(String key) {
-        int answer = 0;
-        boolean yes = false;
-        while (!yes) {
-            String input = getMd5(key + answer);
-//            System.out.println(answer);
-            yes = input.startsWith("000000");
-            answer++;
-        }
-        return answer - 1;
-    }
 
-    public static String getMd5(String input)
-    {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] messageDigest = md.digest(input.getBytes());
-            BigInteger no = new BigInteger(1, messageDigest);
-            String hashtext = no.toString(16);
-            while (hashtext.length() < 32) {
-                hashtext = "0" + hashtext;
+    public static int getPartOneNumber(ArrayList<String> lines) {
+        int nice = 0;
+
+        for (String line : lines) {
+            int nicesub = 0;
+            int vowelCount = 0;
+            for (char c : line.toCharArray()) {
+                if ("aeiou".indexOf(c) >= 0) {
+                    vowelCount++;
+                }
             }
-            return hashtext;
+            if (vowelCount >= 3) {
+                nicesub++;
+            }
+
+            boolean hasDouble = false;
+            for (int i = 1; i < line.length(); i++) {
+                if (line.charAt(i) == line.charAt(i - 1)) {
+                    hasDouble = true;
+                    break;
+                }
+            }
+            if (hasDouble) {
+                nicesub++;
+            }
+
+            if (!(line.contains("ab") || line.contains("cd") ||
+                    line.contains("pq") || line.contains("xy"))) {
+                nicesub++;
+            }
+
+            if (nicesub == 3) {
+                nice++;
+            }
         }
-        catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        return nice;
     }
+
+
+
+    public static int getPartTwoNumber(ArrayList<String> lines) {
+        int nice = 0;
+
+        for (String line : lines) {
+            boolean hasRepeatedPair = false;
+            boolean hasSandwich = false;
+
+            // Rule 1: repeated pair without overlapping
+            for (int i = 0; i < line.length() - 1; i++) {
+                String pair = line.substring(i, i + 2);
+
+                // Look for same pair later in string (i + 2 prevents overlap)
+                if (line.indexOf(pair, i + 2) != -1) {
+                    hasRepeatedPair = true;
+                    break;
+                }
+            }
+
+            // Rule 2: x_y pattern ("sandwich")
+            for (int i = 0; i < line.length() - 2; i++) {
+                if (line.charAt(i) == line.charAt(i + 2)) {
+                    hasSandwich = true;
+                    break;
+                }
+            }
+
+            if (hasRepeatedPair && hasSandwich) {
+                nice++;
+            }
+        }
+
+        return nice;
+    }
+
+
+
+
 
     public static ArrayList<String> getFileData(String fileName) {
         ArrayList<String> fileData = new ArrayList<String>();
@@ -72,4 +113,6 @@ public class Main {
         }
     }
 }
+
+
 
