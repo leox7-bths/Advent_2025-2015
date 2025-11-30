@@ -1,11 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.math.BigInteger;
-
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
 
 
 public class Main {
@@ -13,87 +10,161 @@ public class Main {
         ArrayList<String> lines = getFileData("src/data");
         System.out.println("Part one answer: " + getPartOneNumber(lines));
         System.out.println("Part two answer: " + getPartTwoNumber(lines));
+
+
     }
-
-
 
 
     public static int getPartOneNumber(ArrayList<String> lines) {
-        int nice = 0;
 
-        for (String line : lines) {
-            int nicesub = 0;
-            int vowelCount = 0;
-            for (char c : line.toCharArray()) {
-                if ("aeiou".indexOf(c) >= 0) {
-                    vowelCount++;
-                }
-            }
-            if (vowelCount >= 3) {
-                nicesub++;
-            }
 
-            boolean hasDouble = false;
-            for (int i = 1; i < line.length(); i++) {
-                if (line.charAt(i) == line.charAt(i - 1)) {
-                    hasDouble = true;
+        HashMap<String, Integer> map = new HashMap<>();
+
+
+        map.put("a", 0);
+        map.put("b", 0);
+        map.put("c", 0);
+        map.put("d", 0);
+
+
+        int temp = 0;
+        int jnz = 0;
+        int i = 0;
+
+
+        while (i < lines.size()) {
+            String line = lines.get(i);
+            String[] parts = line.split(" ");
+            String op = parts[0];
+
+            switch (op) {
+                case "cpy": {
+                    String x = parts[1];
+                    String y = parts[2];
+                    int value;
+
+                    if (map.containsKey(x)) {
+                        value = map.get(x);
+                    } else {
+                        value = Integer.parseInt(x);
+                    }
+
+                    map.put(y, value);
+                    i++;
                     break;
                 }
-            }
-            if (hasDouble) {
-                nicesub++;
-            }
 
-            if (!(line.contains("ab") || line.contains("cd") ||
-                    line.contains("pq") || line.contains("xy"))) {
-                nicesub++;
-            }
+                case "inc": {
+                    String r = parts[1];
+                    map.put(r, map.get(r) + 1);
+                    i++;
+                    break;
+                }
 
-            if (nicesub == 3) {
-                nice++;
+                case "dec": {
+                    String r = parts[1];
+                    map.put(r, map.get(r) - 1);
+                    i++;
+                    break;
+                }
+
+                case "jnz": {
+                    String x = parts[1];
+                    String y = parts[2];
+
+                    int value = map.containsKey(x) ? map.get(x) : Integer.parseInt(x);
+                    int offset = map.containsKey(y) ? map.get(y) : Integer.parseInt(y);
+
+                    if (value != 0) {
+                        i += offset;
+                    } else {
+                        i++;
+                    }
+                    break;
+                }
+
+                default:
+                    i++;
             }
         }
-        return nice;
+        return map.get("a");
     }
-
 
 
     public static int getPartTwoNumber(ArrayList<String> lines) {
-        int nice = 0;
 
-        for (String line : lines) {
-            boolean hasRepeatedPair = false;
-            boolean hasSandwich = false;
 
-            // Rule 1: repeated pair without overlapping
-            for (int i = 0; i < line.length() - 1; i++) {
-                String pair = line.substring(i, i + 2);
+        HashMap<String, Integer> map = new HashMap<>();
 
-                // Look for same pair later in string (i + 2 prevents overlap)
-                if (line.indexOf(pair, i + 2) != -1) {
-                    hasRepeatedPair = true;
+
+        map.put("a", 0);
+        map.put("b", 0);
+        map.put("c", 1);
+        map.put("d", 0);
+
+
+        int temp = 0;
+        int jnz = 0;
+        int i = 0;
+
+
+        while (i < lines.size()) {
+            String line = lines.get(i);
+            String[] parts = line.split(" ");
+            String op = parts[0];
+
+            switch (op) {
+                case "cpy": {
+                    String x = parts[1];
+                    String y = parts[2];
+                    int value;
+
+                    if (map.containsKey(x)) {
+                        value = map.get(x);
+                    } else {
+                        value = Integer.parseInt(x);
+                    }
+
+                    map.put(y, value);
+                    i++;
                     break;
                 }
-            }
 
-            // Rule 2: x_y pattern ("sandwich")
-            for (int i = 0; i < line.length() - 2; i++) {
-                if (line.charAt(i) == line.charAt(i + 2)) {
-                    hasSandwich = true;
+                case "inc": {
+                    String r = parts[1];
+                    map.put(r, map.get(r) + 1);
+                    i++;
                     break;
                 }
-            }
 
-            if (hasRepeatedPair && hasSandwich) {
-                nice++;
+                case "dec": {
+                    String r = parts[1];
+                    map.put(r, map.get(r) - 1);
+                    i++;
+                    break;
+                }
+
+                case "jnz": {
+                    String x = parts[1];
+                    String y = parts[2];
+
+                    int value = map.containsKey(x) ? map.get(x) : Integer.parseInt(x);
+                    int offset = map.containsKey(y) ? map.get(y) : Integer.parseInt(y);
+
+                    if (value != 0) {
+                        i += offset;
+                    } else {
+                        i++;
+                    }
+                    break;
+                }
+
+                default:
+                    i++;
             }
         }
-
-        return nice;
+        return map.get("a");
     }
-
-
-
 
 
     public static ArrayList<String> getFileData(String fileName) {
@@ -113,6 +184,4 @@ public class Main {
         }
     }
 }
-
-
 
