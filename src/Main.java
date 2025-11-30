@@ -1,147 +1,74 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 
 public class Main {
+    static Map<String, String> instructions = new HashMap<>();
+    static Map<String, Integer> cache = new HashMap<>();
+
     public static void main(String[] args) {
         ArrayList<String> lines = getFileData("src/data");
         System.out.println("Part one answer: " + getPartOneNumber(lines));
-        System.out.println("Part two answer: " + getPartTwoNumber(lines));
+        int partOne = getPartOneNumber(lines);
+        System.out.println("Part two answer: " + getPartTwoNumber(lines, partOne));
     }
 
 
-    public static int getPartOneNumber(ArrayList<String> line) {
-        boolean[][] grid = new boolean[1000][1000];
-        for (String lines : line) {
-            String[] parts = lines.split(" ");
-            if (parts.length == 4) {
-                String first = parts[1];
-                String second = parts[3];
-                String[] cord1 = first.split(",");
-                String cord11 = cord1[0];
-                String cord12 = cord1[1];
-                String[] cord2 = second.split(",");
-                String cord21 = cord2[0];
-                String cord22 = cord2[1];
-                for (int x = Integer.parseInt(cord11); x <= Integer.parseInt(cord21); x++) {
-                    for (int y = Integer.parseInt(cord12); y <= Integer.parseInt(cord22); y++) {
-                        if (grid[x][y]) {
-//                            System.out.println(x + "," + y);
-                            grid[x][y] = false;
-                        } else {
-//                            System.out.println(x + "," + y);
-                            grid[x][y] = true;
-                        }
-                    }
-                }
-            } else {
-                String onOff = parts[1];
-                String first = parts[2];
-                String second = parts[4];
-                String[] cord1 = first.split(",");
-                String cord11 = cord1[0];
-                String cord12 = cord1[1];
-                String[] cord2 = second.split(",");
-                String cord21 = cord2[0];
-                String cord22 = cord2[1];
-//                System.out.println(onOff);
-//                System.out.println(first);
-//                System.out.println(second);
-//                System.out.println(cord11);
-//                System.out.println(cord12);
-//                System.out.println(cord21);
-//                System.out.println(cord22);
-
-                for (int x = Integer.parseInt(cord11); x <= Integer.parseInt(cord21); x++) {
-                    for (int y = Integer.parseInt(cord12); y <= Integer.parseInt(cord22); y++) {
-                        if (onOff.equals("on")) {
-//                            System.out.println(x + "," + y);
-                            grid[x][y] = true;
-                        } else {
-//                            System.out.println(x + "," + y);
-                            grid[x][y] = false;
-                        }
-                    }
-                }
-            }
+    public static int getPartOneNumber(ArrayList<String> lines) {
+        instructions.clear();
+        cache.clear();
+        for (String l : lines) {
+            String[] parts = l.split(" -> ");
+            instructions.put(parts[1], parts[0]);
         }
+        return getSignal("a");
+    }
 
-        int count = 0;
-        for (int a = 0; a < 1000; a++) {
-            for (int b = 0; b < 1000; b++) {
-                if (grid[a][b] == true) {
-                    count++;
-                }
-            }
+    private static int getSignal(String wire) {
+        if (wire.matches("\\d+")) return Integer.parseInt(wire);
+        if (cache.containsKey(wire)) return cache.get(wire);
+        String expr = instructions.get(wire);
+        int result;
+        if (expr.contains("AND")) {
+            String[] parts = expr.split(" AND ");
+            result = getSignal(parts[0]) & getSignal(parts[1]);
+        } else if (expr.contains("OR")) {
+            String[] parts = expr.split(" OR ");
+            result = getSignal(parts[0]) | getSignal(parts[1]);
+        } else if (expr.contains("LSHIFT")) {
+            String[] parts = expr.split(" LSHIFT ");
+            result = (getSignal(parts[0]) << Integer.parseInt(parts[1])) & 0xFFFF;
+        } else if (expr.contains("RSHIFT")) {
+            String[] parts = expr.split(" RSHIFT ");
+            result = getSignal(parts[0]) >>> Integer.parseInt(parts[1]);
+        } else if (expr.startsWith("NOT")) {
+            String operand = expr.substring(4);
+            result = ~getSignal(operand) & 0xFFFF;
+        } else {
+            result = getSignal(expr);
         }
-
-        return count;
+        cache.put(wire, result);
+        return result;
     }
 
 
-    public static int getPartTwoNumber(ArrayList<String> line) {
-        int[][] grid = new int[1000][1000];
-        for (String lines : line) {
-            String[] parts = lines.split(" ");
-            if (parts.length == 4) {
-                String first = parts[1];
-                String second = parts[3];
-                String[] cord1 = first.split(",");
-                String cord11 = cord1[0];
-                String cord12 = cord1[1];
-                String[] cord2 = second.split(",");
-                String cord21 = cord2[0];
-                String cord22 = cord2[1];
-                for (int x = Integer.parseInt(cord11); x <= Integer.parseInt(cord21); x++) {
-                    for (int y = Integer.parseInt(cord12); y <= Integer.parseInt(cord22); y++) {
-                        grid[x][y] += 2;
-                    }
-                }
-            } else {
-                String onOff = parts[1];
-                String first = parts[2];
-                String second = parts[4];
-                String[] cord1 = first.split(",");
-                String cord11 = cord1[0];
-                String cord12 = cord1[1];
-                String[] cord2 = second.split(",");
-                String cord21 = cord2[0];
-                String cord22 = cord2[1];
-//                System.out.println(onOff);
-//                System.out.println(first);
-//                System.out.println(second);
-//                System.out.println(cord11);
-//                System.out.println(cord12);
-//                System.out.println(cord21);
-//                System.out.println(cord22);
-
-                for (int x = Integer.parseInt(cord11); x <= Integer.parseInt(cord21); x++) {
-                    for (int y = Integer.parseInt(cord12); y <= Integer.parseInt(cord22); y++) {
-                        if (onOff.equals("on")) {
-//                            System.out.println(x + "," + y);
-                            grid[x][y]++;
-                        } else {
-//                            System.out.println(x + "," + y);
-                            if (grid[x][y] != 0) {
-                                grid[x][y]--;
-                            }
-                        }
-                    }
-                }
-            }
+    public static int getPartTwoNumber(ArrayList<String> lines, int overrideB) {
+        instructions.clear();
+        cache.clear();
+        for (String l : lines) {
+            String[] parts = l.split(" -> ");
+            instructions.put(parts[1], parts[0]);
         }
-
-        int count = 0;
-        for (int a = 0; a < 1000; a++) {
-            for (int b = 0; b < 1000; b++) {
-                count += grid[a][b];
-            }
-        }
-
-        return count;
+        instructions.put("b", String.valueOf(overrideB));
+        cache.clear();
+        return getSignal("a");
     }
+
+
 
 
     public static ArrayList<String> getFileData(String fileName) {
