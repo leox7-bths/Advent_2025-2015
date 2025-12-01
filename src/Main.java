@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 
+
+
 public class Main {
     public static void main(String[] args) {
         ArrayList<String> lines = getFileData("src/data");
@@ -13,41 +15,51 @@ public class Main {
 
 
     public static int getPartOneNumber(ArrayList<String> lines) {
+        int dial = 50;
         int count = 0;
+
         for (String line : lines) {
-            int letter = 0;
-            for (int i = 0; i < line.length(); i++) {
-                char c = line.charAt(i);
-                if (c == '"') continue;
-                if (c == '\\') {
-                    i++;
-                    if (i < line.length()) {
-                        char next = line.charAt(i);
-                        if (next == 'x') {
-                            i += 2;
-                        }
-                    }
-                }
-                letter++;
+            char dir = line.charAt(0);
+            int num = Integer.parseInt(line.substring(1));
+            num %= 100;
+
+            if (dir == 'R') {
+                dial = (dial + num) % 100;
+            } else { // L
+                dial = (dial - num + 100) % 100;
             }
-            count += line.length() - letter;
+            if (dial == 0) {
+                count++;
+            }
+//            System.out.println(dial);
         }
         return count;
     }
 
 
-        public static int getPartTwoNumber(ArrayList<String> lines) {
-            int count = 0;
-            for (String line : lines) {
-                String newString = line;
-                newString = newString.replace("\\", "\\\\");
-                newString = newString.replace("\"", "\\\"");
-                newString = "\"" + newString + "\"";
 
-                count += newString.length() - line.length();
+
+
+    public static int getPartTwoNumber(ArrayList<String> lines) {
+        int dial = 50;  // starting position
+        int count = 0;
+
+        for (String line : lines) {
+            char dir = line.charAt(0);
+            int num = Integer.parseInt(line.substring(1));
+
+            int step = (dir == 'R') ? 1 : -1;
+
+            // simulate each click
+            for (int i = 0; i < num; i++) {
+                dial = (dial + step + 100) % 100;
+                if (dial == 0) count++;
             }
-            return count;
+//            System.out.println(dial);
+        }
+        return count;
     }
+
 
 
 
@@ -69,4 +81,6 @@ public class Main {
         }
     }
 }
+
+
 
