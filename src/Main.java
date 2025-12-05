@@ -9,77 +9,142 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         ArrayList<String> lines = getFileData("src/data");
-        System.out.println("Part one answer: " + getPartOneNumber(lines));
-        System.out.println("Part two answer: " + getPartTwoNumber(lines));
-    }
 
+        String[][] grid = get2DArray(lines);
 
-
-    public static int getPartOneNumber(ArrayList<String> lines) {
-        int total = 0;
-
-        for (String line: lines) {
-            char[] chars = line.toCharArray();
-            ArrayList<Integer> digits = new ArrayList<>();
-            for (char ch : chars) {
-                if (Character.isDigit(ch)) digits.add(ch - '0');
-            }
-
-            int best = 0;
-            for (int i = 0; i < digits.size(); i++) {
-                for (int j = i + 1; j < digits.size(); j++) {
-                    int val = digits.get(i) * 10 + digits.get(j);
-                    if (val > best) best = val;
-                }
-            }
-
-            System.out.println(best);
-            total += best;
-        }
-
-        return total;
-    }
-
-
-
-    public static long getPartTwoNumber(ArrayList<String> lines) {
-        long total = 0;
-
-        for (String line: lines) {
-            char[] chars = line.toCharArray();
-            ArrayList<Integer> digits = new ArrayList<>();
-            for (char ch : chars) {
-                if (Character.isDigit(ch)) digits.add(ch - '0');
-            }
-
-            int n = digits.size();
-            int toPick = 12;
-            StringBuilder result = new StringBuilder();
-            int start = 0;
-
-            while (toPick > 0) {
-                int maxDigit = -1;
-                int maxIndex = start;
-                for (int i = start; i <= n - toPick; i++) {
-                    if (digits.get(i) > maxDigit) {
-                        maxDigit = digits.get(i);
-                        maxIndex = i;
+        int partOneNumber = 0;
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[0].length; j++) {
+                String e = grid[i][j];
+                if (e.equals("@")) {
+                    int count = getPartOneNumber(grid, i, j);
+                    if (count < 4) {
+                        partOneNumber++;
                     }
                 }
-                result.append(maxDigit);
-                start = maxIndex + 1;
-                toPick--;
             }
-
-            System.out.println(result.toString());
-            total += Long.parseLong(result.toString());
         }
 
-        return total;
+        System.out.println("Part one answer: " + partOneNumber);
+
+        int partTwoNumber = 0;
+        while (true) {
+            ArrayList<int[]> toRemove = new ArrayList<>();
+
+            for (int i = 1; i < grid.length - 1; i++) {
+                for (int j = 1; j < grid[0].length - 1; j++) {
+                    if (grid[i][j].equals("@")) {
+                        int count = getPartTwoNumber(grid, i, j);
+                        if (count < 4) {
+                            toRemove.add(new int[]{i, j});
+                        }
+                    }
+                }
+            }
+
+            if (toRemove.isEmpty()) {
+                break;
+            }
+            for (int[] pos : toRemove) {
+                grid[pos[0]][pos[1]] = ".";
+            }
+
+            partTwoNumber += toRemove.size();
+        }
+
+
+        System.out.println("Part two answer: " + partTwoNumber);
     }
 
 
 
+    public static int getPartOneNumber(String[][] grid, int row, int col) {
+        int count = 0;
+        if (grid[row-1][col].equals("@")) {
+            count++;
+        }
+        if (grid[row+1][col].equals("@")) {
+            count++;
+        }
+        if (grid[row][col-1].equals("@")) {
+            count++;
+        }
+        if (grid[row][col+1].equals("@")) {
+            count++;
+        }
+        if (grid[row-1][col+1].equals("@")) {
+            count++;
+        }
+        if (grid[row-1][col-1].equals("@")) {
+            count++;
+        }
+        if (grid[row+1][col-1].equals("@")) {
+            count++;
+        }
+        if (grid[row+1][col+1].equals("@")) {
+            count++;
+        }
+
+
+        return count;
+    }
+
+
+
+    public static int getPartTwoNumber(String[][] grid, int row, int col) {
+        int count = 0;
+        if (grid[row-1][col].equals("@")) count++;
+        if (grid[row+1][col].equals("@")) count++;
+        if (grid[row][col-1].equals("@")) count++;
+        if (grid[row][col+1].equals("@")) count++;
+        if (grid[row-1][col+1].equals("@")) count++;
+        if (grid[row-1][col-1].equals("@")) count++;
+        if (grid[row+1][col-1].equals("@")) count++;
+        if (grid[row+1][col+1].equals("@")) count++;
+            //remove
+//            for (int i = 0; i < grid.length; i++) {
+//                for (int j = 0; j < grid[i].length; j++) {
+//                    System.out.print(grid[i][j] + " ");
+//                }
+//                System.out.println();
+//            }
+//            System.out.println("");
+            //remove
+        return count;
+    }
+
+
+
+    public static String[][] get2DArray(ArrayList<String> fileData) {
+
+        String borderRow = "";
+        for (int i = 0; i < fileData.get(0).length(); i++) {
+            borderRow += ".";
+        }
+
+        fileData.add(0, borderRow);
+        fileData.add(borderRow);
+
+        for (int i = 0; i < fileData.size(); i++) {
+            String s = fileData.get(i);
+            s = "." + s + ".";
+            fileData.set(i, s);
+        }
+
+        int rows = fileData.size();
+        int cols = fileData.get(0).length();
+        String[][] grid = new String[rows][cols];
+
+        for (int i = 0; i < fileData.size(); i++) {
+            String row = fileData.get(i);
+            for (int j = 0; j < row.length(); j++) {
+                String entry = row.substring(j, j+1);
+                grid[i][j] = entry;
+            }
+        }
+
+        return grid;
+    }
 
 
 
