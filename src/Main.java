@@ -1,150 +1,91 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Scanner;
-
 
 
 
 public class Main {
     public static void main(String[] args) {
         ArrayList<String> lines = getFileData("src/data");
-
-        String[][] grid = get2DArray(lines);
-
-        int partOneNumber = 0;
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[0].length; j++) {
-                String e = grid[i][j];
-                if (e.equals("@")) {
-                    int count = getPartOneNumber(grid, i, j);
-                    if (count < 4) {
-                        partOneNumber++;
-                    }
-                }
-            }
-        }
-
-        System.out.println("Part one answer: " + partOneNumber);
-
-        int partTwoNumber = 0;
-        while (true) {
-            ArrayList<int[]> toRemove = new ArrayList<>();
-
-            for (int i = 1; i < grid.length - 1; i++) {
-                for (int j = 1; j < grid[0].length - 1; j++) {
-                    if (grid[i][j].equals("@")) {
-                        int count = getPartTwoNumber(grid, i, j);
-                        if (count < 4) {
-                            toRemove.add(new int[]{i, j});
-                        }
-                    }
-                }
-            }
-
-            if (toRemove.isEmpty()) {
-                break;
-            }
-            for (int[] pos : toRemove) {
-                grid[pos[0]][pos[1]] = ".";
-            }
-
-            partTwoNumber += toRemove.size();
-        }
-
-
-        System.out.println("Part two answer: " + partTwoNumber);
+        ArrayList<String> ranges = getFileData("src/data2");
+        System.out.println("Part one answer: " + getPartOneNumber(lines, ranges));
+        System.out.println("Part two answer: " + getPartTwoNumber(lines, ranges));
     }
 
 
 
-    public static int getPartOneNumber(String[][] grid, int row, int col) {
+    public static int getPartOneNumber(ArrayList<String> lines, ArrayList<String> ranges) {
         int count = 0;
-        if (grid[row-1][col].equals("@")) {
-            count++;
-        }
-        if (grid[row+1][col].equals("@")) {
-            count++;
-        }
-        if (grid[row][col-1].equals("@")) {
-            count++;
-        }
-        if (grid[row][col+1].equals("@")) {
-            count++;
-        }
-        if (grid[row-1][col+1].equals("@")) {
-            count++;
-        }
-        if (grid[row-1][col-1].equals("@")) {
-            count++;
-        }
-        if (grid[row+1][col-1].equals("@")) {
-            count++;
-        }
-        if (grid[row+1][col+1].equals("@")) {
-            count++;
-        }
+        long first = 0;
+        long second = 0;
 
+        for (String line : lines) {
+            long id = Long.parseLong(line);
+            boolean isFresh = false;
+            for (String range : ranges) {
+                String[] rangenum = range.split("-");
+                first = Long.parseLong(rangenum[0]);
+                second = Long.parseLong(rangenum[1]);
 
+                if (id >= first && id <= second) {
+                    isFresh = true;
+                    break;
+                }
+            }
+            if (isFresh) {
+                count++;
+            }
+        }
         return count;
     }
 
 
 
-    public static int getPartTwoNumber(String[][] grid, int row, int col) {
-        int count = 0;
-        if (grid[row-1][col].equals("@")) count++;
-        if (grid[row+1][col].equals("@")) count++;
-        if (grid[row][col-1].equals("@")) count++;
-        if (grid[row][col+1].equals("@")) count++;
-        if (grid[row-1][col+1].equals("@")) count++;
-        if (grid[row-1][col-1].equals("@")) count++;
-        if (grid[row+1][col-1].equals("@")) count++;
-        if (grid[row+1][col+1].equals("@")) count++;
-            //remove
-//            for (int i = 0; i < grid.length; i++) {
-//                for (int j = 0; j < grid[i].length; j++) {
-//                    System.out.print(grid[i][j] + " ");
-//                }
-//                System.out.println();
-//            }
-//            System.out.println("");
-            //remove
+
+    public static long getPartTwoNumber(ArrayList<String> lines, ArrayList<String> ranges) {
+        ArrayList<long[]> list = new ArrayList<>();
+
+        for (String range : ranges) {
+            if (range.trim().isEmpty()) continue;
+            String[] r = range.split("-");
+            long first = Long.parseLong(r[0].trim());
+            long second = Long.parseLong(r[1].trim());
+            list.add(new long[]{ first, second });
+        }
+
+        if (list.isEmpty()) return 0;
+
+        list.sort((a, b) -> Long.compare(a[0], b[0]));
+
+        ArrayList<long[]> merged = new ArrayList<>();
+        long start = list.get(0)[0];
+        long end = list.get(0)[1];
+
+        for (int i = 1; i < list.size(); i++) {
+            long s = list.get(i)[0];
+            long e = list.get(i)[1];
+
+            if (s <= end + 1) {
+                if (e > end) end = e;
+            } else {
+                merged.add(new long[]{ start, end });
+                start = s;
+                end = e;
+            }
+        }
+        merged.add(new long[]{ start, end });
+
+        long count = 0;
+        for (long[] m : merged) {
+            count += (m[1] - m[0] + 1);
+        }
+
         return count;
     }
 
 
-
-    public static String[][] get2DArray(ArrayList<String> fileData) {
-
-        String borderRow = "";
-        for (int i = 0; i < fileData.get(0).length(); i++) {
-            borderRow += ".";
-        }
-
-        fileData.add(0, borderRow);
-        fileData.add(borderRow);
-
-        for (int i = 0; i < fileData.size(); i++) {
-            String s = fileData.get(i);
-            s = "." + s + ".";
-            fileData.set(i, s);
-        }
-
-        int rows = fileData.size();
-        int cols = fileData.get(0).length();
-        String[][] grid = new String[rows][cols];
-
-        for (int i = 0; i < fileData.size(); i++) {
-            String row = fileData.get(i);
-            for (int j = 0; j < row.length(); j++) {
-                String entry = row.substring(j, j+1);
-                grid[i][j] = entry;
-            }
-        }
-
-        return grid;
-    }
 
 
 
