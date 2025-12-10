@@ -1,78 +1,75 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         ArrayList<String> lines = getFileData("src/data");
-
-        int partOneAnswer = 0;
-        int partTwoAnswer = 0;
-        for (int i = 0; i < lines.size(); i++) {
-            partOneAnswer += getPartOneNumber(lines.get(i));
-            partTwoAnswer += getPartTwoNumber(lines.get(i));
-        }
-
-        System.out.println("Part one answer: " + partOneAnswer);
-        System.out.println("Part two answer: " + partTwoAnswer);
+        System.out.println("Part one answer: " + getPartOneNumber(lines));
+        System.out.println("Part two answer: " + getPartTwoNumber(lines));
     }
 
-    public static int getPartOneNumber(String line) {
-        return 0;
+    public static long getPartOneNumber(ArrayList<String> lines) {
+        Map<String, Map<String, Integer>> distances = parseDistances(lines);
+        Set<String> cities = distances.keySet();
+        ArrayList<String> cityList = new ArrayList<>(cities);
+        return permuteAndFindDistance(cityList, distances, true);
     }
 
-    public static int getPartTwoNumber(String line) {
-        String first = "";
-        String second = "";
-        int finalnum = 0;
+    public static long getPartTwoNumber(ArrayList<String> lines) {
+        Map<String, Map<String, Integer>> distances = parseDistances(lines);
+        Set<String> cities = distances.keySet();
+        ArrayList<String> cityList = new ArrayList<>(cities);
+        return permuteAndFindDistance(cityList, distances, false);
+    }
 
-        String[] words = {"zero","one","two","three","four","five","six","seven","eight","nine"};
-
-        for (int i = 0; i < line.length(); i++) {
-            char current = line.charAt(i);
-            if (Character.isDigit(current)) {
-                first = Character.toString(current);
-                break;
-            }
-            for (int j = 0; j < words.length; j++) {
-                if (line.startsWith(words[j], i)) {
-                    first = Integer.toString(j);
-                    i += words[j].length() - 1;
-                    break;
-                }
-            }
-            if (!first.equals("")) break;
+    public static Map<String, Map<String, Integer>> parseDistances(ArrayList<String> lines) {
+        Map<String, Map<String, Integer>> distances = new HashMap<>();
+        for (String line : lines) {
+            String[] parts = line.split(" ");
+            String from = parts[0];
+            String to = parts[2];
+            int distance = Integer.parseInt(parts[4]);
+            distances.putIfAbsent(from, new HashMap<>());
+            distances.putIfAbsent(to, new HashMap<>());
+            distances.get(from).put(to, distance);
+            distances.get(to).put(from, distance);
         }
+        return distances;
+    }
 
-        for (int i = line.length() - 1; i >= 0; i--) {
-            char current = line.charAt(i);
-            if (Character.isDigit(current)) {
-                second = Character.toString(current);
-                break;
+    public static long permuteAndFindDistance(ArrayList<String> cities, Map<String, Map<String, Integer>> distances, boolean findShortest) {
+        return permuteHelper(cities, 0, distances, findShortest, findShortest ? Long.MAX_VALUE : Long.MIN_VALUE);
+    }
+
+    public static long permuteHelper(ArrayList<String> cities, int start, Map<String, Map<String, Integer>> distances, boolean findShortest, long bestDistance) {
+        if (start == cities.size() - 1) {
+            long totalDistance = 0;
+            for (int i = 0; i < cities.size() - 1; i++) {
+                totalDistance += distances.get(cities.get(i)).get(cities.get(i + 1));
             }
-            for (int j = 0; j < words.length; j++) {
-                int len = words[j].length();
-                if (i - len + 1 >= 0 && line.substring(i - len + 1, i + 1).equals(words[j])) {
-                    second = Integer.toString(j);
-                    i -= len - 1;
-                    break;
-                }
-            }
-            if (!second.equals("")) break;
+            return findShortest ? Math.min(bestDistance, totalDistance) : Math.max(bestDistance, totalDistance);
         }
-
-        for (int i = 0; i < first.length(); i++) {
-            char Str1 = first.charAt(i);
-            char Str2 = second.charAt(i);
-            finalnum += Integer.parseInt(String.valueOf(Str1) + String.valueOf(Str2));
+        for (int i = start; i < cities.size(); i++) {
+            swap(cities, start, i);
+            bestDistance = permuteHelper(cities, start + 1, distances, findShortest, bestDistance);
+            swap(cities, start, i);
         }
+        return bestDistance;
+    }
 
-        return finalnum;
+    public static void swap(ArrayList<String> list, int i, int j) {
+        String temp = list.get(i);
+        list.set(i, list.get(j));
+        list.set(j, temp);
     }
 
     public static ArrayList<String> getFileData(String fileName) {
-        ArrayList<String> fileData = new ArrayList<String>();
+        ArrayList<String> fileData = new ArrayList<>();
         try {
             File f = new File(fileName);
             Scanner s = new Scanner(f);
@@ -81,10 +78,8 @@ public class Main {
                 if (!line.equals(""))
                     fileData.add(line);
             }
-            return fileData;
-        }
-        catch (FileNotFoundException e) {
-            return fileData;
-        }
+            s.close();
+        } catch (FileNotFoundException e) {}
+        return fileData;
     }
 }
